@@ -53,7 +53,9 @@ async function tick(cfg, state) {
   if (!ids.length) return;
   const leads = await getLeadDetails(cfg, ids);
   const now = Date.now();
-  const delayMs = (cfg.monday.delayMinutes || 4) * 60000;
+  const delayMs = (cfg.monday.delaySeconds != null)
+    ? cfg.monday.delaySeconds * 1000
+    : (cfg.monday.delayMinutes || 4) * 60000;
 
   for (const lead of leads) {
     const d = decide(lead, {
@@ -89,7 +91,8 @@ function startLeadWatcher(cfg) {
   console.log(`\n👀 Lead-vagt kører for board ${m.boardId}`);
   console.log(`   Tilstand: ${m.dryRun ? "🧪 TØR-TEST (sender intet, logger kun)" : "🔴 LIVE (sender rigtige beskeder)"}`);
   console.log(`   Whitelist: ${m.allowedNumbers && m.allowedNumbers.length ? m.allowedNumbers.join(", ") : "ALLE numre (ingen begrænsning!)"}`);
-  console.log(`   Forsinkelse: ${m.delayMinutes || 4} min · tjekker hvert ${m.pollSeconds || 30}s`);
+  const delayTxt = m.delaySeconds != null ? `${m.delaySeconds} sek` : `${m.delayMinutes || 4} min`;
+  console.log(`   Forsinkelse: ${delayTxt} · tjekker hvert ${m.pollSeconds || 30}s`);
   console.log(`   Reagerer KUN på leads oprettet efter nu (aldrig de gamle).\n`);
   const run = () => tick(cfg, state).catch(e => console.error("[Lead-vagt] fejl:", e.message));
   run();

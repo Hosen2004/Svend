@@ -188,6 +188,12 @@
             <div class="vlog" id="vlog"></div>
             <button class="mic" id="mic" onclick="toggleMic()">🎙️</button>
             <div class="vhint" id="vhint">Tryk og tal — sig fx "jeg vil gerne bestille en tid"</div>
+            <div id="voiceSelWrap" style="display:none;margin-top:12px">
+              <label style="font-size:11px;color:#5b6472;display:block;margin-bottom:4px">🔊 Svends stemme</label>
+              <select id="voiceSel" onchange="onVoicePick()" style="background:#161a21;border:1px solid #2a323f;color:#f4f6fa;border-radius:8px;padding:8px 10px;font-size:12.5px;max-width:230px;width:100%"></select>
+            </div>
+            <button class="btnghost" style="margin-top:10px" onclick="testVoice()">▶ Hør Svends stemme</button>
+            <div style="font-size:11px;color:#5b6472;margin-top:8px">💡 Bedste stemme i <b>Chrome</b>. I det færdige produkt bruger Svend en menneskelig stemme.</div>
             <div class="vwarn" id="vwarn">Din browser understøtter ikke tale. Prøv Chrome på computer/Android — eller brug SMS-fanen. 🙂</div>
           </div>
         </div>
@@ -607,6 +613,7 @@ function initVoice(){
 }
 function toggleMic(){
   if(!voiceReady) initVoice();
+  warmUpTTS();
   if(!recog){ document.getElementById('vwarn').style.display='block'; return; }
   if(listening){ recog.stop(); setMic(false); return; }
   // ensure Svend has greeted in voice log
@@ -620,20 +627,80 @@ function setMic(on){
   m.textContent=on?'⏹️':'🎙️';
   document.getElementById('vhint').textContent = on? "Lytter… tal nu" : "Tryk og tal — sig fx \"hvad koster det?\"";
 }
-/* Text-to-speech */
-let daVoice=null;
-function loadVoices(){
-  const vs=window.speechSynthesis?window.speechSynthesis.getVoices():[];
-  daVoice = vs.find(v=>v.lang && v.lang.toLowerCase().startsWith('da')) || null;
+
+/* ---------- NATURLIG TEKST-TIL-TALE ----------
+   Vælger den bedste danske stemme på enheden (Googles neurale stemme først),
+   taler i sætninger for mere naturlig betoning, og lader brugeren skifte stemme.  */
+let voicesList=[], bestVoice=null, ttsWarmed=false;
+function refreshVoices(){
+  if(!window.speechSynthesis) return;
+  voicesList = (window.speechSynthesis.getVoices()||[]).filter(v=>/^da(-|_|$)/i.test(v.lang||''));
+  if(!bestVoice) bestVoice = pickBestDanish(voicesList);
+  populateVoiceSel();
 }
-if(window.speechSynthesis){ loadVoices(); window.speechSynthesis.onvoiceschanged=loadVoices; }
+function pickBestDanish(vs){
+  if(!vs.length) return null;
+  return vs.find(v=>/google/i.test(v.name))                                      // neural (Chrome/Android) — bedst
+      || vs.find(v=>/(sara|magnus|nanna|naja)/i.test(v.name) && !/compact/i.test(v.name)) // premium Apple-stemmer
+      || vs.find(v=>v.localService===false)                                       // remote = ofte bedre
+      || vs.find(v=>!/compact|eloquence/i.test(v.name))                           // undgå de metalliske
+      || vs[0];
+}
+function populateVoiceSel(){
+  const sel=document.getElementById('voiceSel'), wrap=document.getElementById('voiceSelWrap');
+  if(!sel) return;
+  if(voicesList.length<=1){ if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='block';
+  sel.innerHTML='';
+  voicesList.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v.name; o.textContent=v.name.replace(/\(.*?\)/g,'').trim();
+    if(bestVoice && v.name===bestVoice.name) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+function onVoicePick(){
+  const name=document.getElementById('voiceSel').value;
+  bestVoice = voicesList.find(v=>v.name===name) || bestVoice;
+  testVoice();
+}
+function testVoice(){
+  warmUpTTS();
+  speak(TRADE ? "Hej, det er Svend fra "+TRADE.firm+". Hvad kan jeg hjælpe dig med i dag?"
+             : "Hej, det er Svend. Hvad kan jeg hjælpe dig med i dag?");
+}
+function warmUpTTS(){
+  if(ttsWarmed||!window.speechSynthesis) return;
+  try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; window.speechSynthesis.speak(u); ttsWarmed=true; refreshVoices(); }catch(e){}
+}
+if(window.speechSynthesis){
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged=refreshVoices;
+  setTimeout(refreshVoices,400); // nogle browsere loader stemmer sent
+}
+function cleanForSpeech(t){
+  return t
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}️‍]/gu,'')
+    .replace(/&/g,' og ')
+    .replace(/\s{2,}/g,' ')
+    .trim();
+}
 function speak(txt){
   if(!window.speechSynthesis) return;
   try{
     window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(txt.replace(/[🪟🧴🔧⚡🪚🎨🧱🚽💰📅❓🙌✅👍🤔📍🕑🕘🕛📩👆🔁📦🆘💦📹]/g,''));
-    u.lang='da-DK'; if(daVoice)u.voice=daVoice; u.rate=1.02; u.pitch=1.0;
-    window.speechSynthesis.speak(u);
+    if(!bestVoice) refreshVoices();
+    const clean=cleanForSpeech(txt);
+    if(!clean) return;
+    const parts=clean.match(/[^.!?…]+[.!?…]*/g)||[clean];   // del i sætninger = mere menneskelig betoning
+    parts.forEach(p=>{
+      const s=p.trim(); if(!s) return;
+      const u=new SpeechSynthesisUtterance(s);
+      u.lang='da-DK';
+      if(bestVoice) u.voice=bestVoice;
+      u.rate=1.0; u.pitch=1.06; u.volume=1;   // let hævet toneleje = venligere, mindre monoton
+      window.speechSynthesis.speak(u);
+    });
   }catch(e){}
 }
 </script>

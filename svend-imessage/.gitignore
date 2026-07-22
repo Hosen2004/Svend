@@ -1,0 +1,5 @@
+# Hemmeligheder og lokale data — må ALDRIG uploades
+config.json
+data/*.json
+node_modules/
+.DS_Store

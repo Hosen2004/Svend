@@ -1,0 +1,21 @@
+{
+  "firm": "Nordjysk VVS",
+  "tradeKey": "vvs",
+  "ownerPhone": "+45 20 00 00 00",
+
+  "useClaude": false,
+  "anthropicApiKey": "",
+  "model": "claude-haiku-4-5-20251001",
+
+  "port": 8787,
+
+  "_hjælp": {
+    "firm": "Dit firmanavn — det Svend præsenterer sig med.",
+    "tradeKey": "Vælg fag: vvs, elektriker, vinduespudser, fugemand, tomrer, maler, murer, kloak.",
+    "ownerPhone": "Dit eget nummer (iMessage) — hertil sender Svend leads og akut-beskeder.",
+    "useClaude": "true = naturlig samtale via Claude (kræver anthropicApiKey). false = gratis regelbaseret.",
+    "anthropicApiKey": "Din nøgle fra console.anthropic.com (kun hvis useClaude er true).",
+    "model": "claude-haiku-4-5-20251001 er billigst/hurtigst. Skift til claude-sonnet-5 for endnu bedre svar.",
+    "port": "Porten BlueBubbles-webhooken peger på."
+  }
+}

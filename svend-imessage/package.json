@@ -1,0 +1,12 @@
+{
+  "name": "svend-imessage",
+  "version": "1.0.0",
+  "description": "Svend — AI-håndværkerassistent på iMessage (ingen npm-afhængigheder)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "simulate": "node simulate.js",
+    "test": "node test.js"
+  },
+  "license": "MIT"
+}

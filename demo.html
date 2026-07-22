@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prøv Svend live — vælg dit fag</title>
+<style>
+  :root{
+    --bg:#0f1115;--bg2:#161a21;--card:#1c222c;--line:#2a323f;
+    --ink:#f4f6fa;--sub:#9aa7b8;--brand:#ff8a1e;--brand2:#ffb703;
+    --green:#28c76f;--red:#ff5b5b;--blue:#3b82f6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 600px at 50% -10%,#1a1f28,#0f1115);color:var(--ink);line-height:1.55;min-height:100vh}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 18px 60px}
+  a{color:var(--brand2)}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .logo .dot{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;font-size:19px}
+  .top .live{font-size:13px;color:var(--green);font-weight:700;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.3);padding:6px 12px;border-radius:999px}
+  h1{font-size:34px;letter-spacing:-.02em;margin-bottom:8px}
+  h1 .hl{background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);font-size:18px;max-width:620px;margin-bottom:26px}
+
+  /* STEP LABEL */
+  .steplab{display:inline-flex;align-items:center;gap:8px;color:var(--brand);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+  .steplab .num{width:22px;height:22px;border-radius:50%;background:var(--brand);color:#111;display:grid;place-items:center;font-size:12px}
+
+  /* TRADE PICKER */
+  .trades{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .trade{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .trade:hover{transform:translateY(-3px);border-color:var(--brand)}
+  .trade.sel{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+  .trade .em{font-size:32px}
+  .trade .nm{margin-top:8px;font-weight:700;font-size:14px}
+  .trade .ds{color:var(--sub);font-size:11px;margin-top:2px}
+
+  /* STAGE */
+  .stage{display:none;margin-top:30px}
+  .stage.on{display:block;animation:fade .4s}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+  .stage-grid{display:grid;grid-template-columns:340px 1fr;gap:30px;align-items:start}
+
+  /* PHONE */
+  .phone{width:340px;background:#0b0d11;border:2px solid var(--line);border-radius:32px;padding:12px 12px 14px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:sticky;top:16px}
+  .pnotch{width:110px;height:20px;background:#000;border-radius:0 0 13px 13px;margin:0 auto 8px}
+  .phead{display:flex;align-items:center;gap:10px;padding:6px 6px 12px;border-bottom:1px solid var(--line)}
+  .phead .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;font-size:20px;flex-shrink:0}
+  .phead .nm{font-weight:700;font-size:15px}
+  .phead .st{color:var(--green);font-size:12px}
+  .tabs{display:flex;gap:6px;margin:12px 4px 8px}
+  .tab{flex:1;text-align:center;padding:9px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);cursor:pointer;font-weight:700;font-size:13px;color:var(--sub)}
+  .tab.on{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#111;border-color:transparent}
+
+  .chat{height:340px;overflow-y:auto;padding:8px 4px;display:flex;flex-direction:column;gap:9px;scrollbar-width:thin}
+  .chat::-webkit-scrollbar{width:5px}.chat::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  .b{max-width:85%;padding:9px 12px;border-radius:14px;font-size:13.5px;animation:pop .3s}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .b.them{background:var(--bg2);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+  .b.me{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .b.svend{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#111;align-self:flex-start;border-bottom-left-radius:4px;font-weight:500}
+  .b .who{font-size:9px;text-transform:uppercase;letter-spacing:.05em;opacity:.6;margin-bottom:2px;font-weight:800}
+  .typing{align-self:flex-start;background:var(--bg2);border:1px solid var(--line);padding:11px 13px;border-radius:14px;display:flex;gap:4px}
+  .typing span{width:6px;height:6px;background:var(--sub);border-radius:50%;animation:blink 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+  /* system card in chat */
+  .syscard{align-self:stretch;background:#0e1620;border:1px solid rgba(40,199,111,.35);border-radius:12px;padding:12px;font-size:12.5px}
+  .syscard .h{color:var(--green);font-weight:800;margin-bottom:6px;font-size:12px}
+  .syscard .r{display:flex;justify-content:space-between;padding:3px 0;color:var(--sub)}
+  .syscard .r b{color:var(--ink)}
+
+  /* quick replies */
+  .quicks{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 4px}
+  .quick{background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;transition:border-color .1s}
+  .quick:hover{border-color:var(--brand)}
+
+  /* estimator widget */
+  .estim{align-self:stretch;background:#0e131a;border:1px solid var(--line);border-radius:14px;padding:12px;margin:2px 0}
+  .estim .et{font-weight:800;font-size:13px;margin-bottom:2px}
+  .estim .es{color:var(--sub);font-size:11px;margin-bottom:10px}
+  .erow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .erow .ei{font-size:18px;width:22px;text-align:center}
+  .erow .el{flex:1;font-size:12.5px}
+  .erow .el small{color:var(--sub);display:block;font-size:10.5px}
+  .step{display:flex;align-items:center;gap:8px}
+  .step button{width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:16px;cursor:pointer;line-height:1}
+  .step button:hover{border-color:var(--brand)}
+  .step .q{width:22px;text-align:center;font-weight:700;font-size:13px}
+  .etot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  .etot .t{font-size:12px;color:var(--sub)}
+  .etot .v{font-size:22px;font-weight:850;color:var(--brand2)}
+  .esend{width:100%;margin-top:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#111;font-weight:800;border:none;padding:11px;border-radius:10px;cursor:pointer;font-size:13.5px}
+  .esend:disabled{opacity:.5;cursor:default}
+
+  /* input bar */
+  .inbar{display:flex;gap:8px;padding:8px 4px 2px;margin-top:6px;border-top:1px solid var(--line)}
+  .inbar input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:11px 14px;color:var(--ink);font-size:13.5px;outline:none}
+  .inbar input:focus{border-color:var(--brand)}
+  .inbar button{background:linear-gradient(135deg,var(--brand),var(--brand2));border:none;width:42px;border-radius:50%;cursor:pointer;font-size:16px;color:#111}
+
+  /* voice panel */
+  .voice{padding:18px 10px;text-align:center;min-height:340px;display:flex;flex-direction:column}
+  .vlog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;margin-bottom:10px;text-align:left}
+  .mic{width:92px;height:92px;border-radius:50%;border:none;margin:6px auto 8px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#111;font-size:38px;cursor:pointer;box-shadow:0 8px 30px rgba(255,138,30,.35);transition:transform .1s}
+  .mic:active{transform:scale(.94)}
+  .mic.rec{background:var(--red);color:#fff;animation:pulse 1.1s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,91,91,.5)}70%{box-shadow:0 0 0 18px rgba(255,91,91,0)}100%{box-shadow:0 0 0 0 rgba(255,91,91,0)}}
+  .vhint{color:var(--sub);font-size:12.5px}
+  .vwarn{background:rgba(255,91,91,.1);border:1px solid rgba(255,91,91,.3);color:#ffb4b4;border-radius:10px;padding:10px;font-size:12px;margin-top:8px;display:none}
+
+  /* SIDE PANEL (right) */
+  .side h2{font-size:24px;margin-bottom:6px}
+  .side p.sd{color:var(--sub);margin-bottom:18px}
+  .try{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+  .tryrow{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+  .tryrow .n{width:26px;height:26px;border-radius:50%;background:var(--bg2);border:1px solid var(--line);display:grid;place-items:center;font-weight:800;color:var(--brand2);flex-shrink:0;font-size:13px}
+  .tryrow h4{font-size:14.5px;margin-bottom:2px}
+  .tryrow p{color:var(--sub);font-size:13px}
+  .cust{background:linear-gradient(160deg,var(--bg2),var(--card));border:1px solid var(--line);border-radius:16px;padding:20px}
+  .cust h3{font-size:17px;margin-bottom:8px}
+  .cust p{color:var(--sub);font-size:13.5px;margin-bottom:12px}
+  .cust .prices{display:flex;flex-wrap:wrap;gap:7px}
+  .cust .chip{background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12px}
+  .cust .chip b{color:var(--brand2)}
+
+  .cta{margin-top:26px;background:linear-gradient(135deg,rgba(255,138,30,.14),rgba(255,183,3,.06));border:1px solid rgba(255,138,30,.35);border-radius:16px;padding:22px;text-align:center}
+  .cta h3{font-size:20px;margin-bottom:6px}
+  .cta p{color:var(--sub);font-size:14px;margin-bottom:14px}
+  .btn{display:inline-block;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#111;font-weight:800;padding:13px 26px;border-radius:12px;border:none;cursor:pointer;font-size:16px;text-decoration:none}
+  .btn:hover{transform:translateY(-2px)}
+  .btnghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-size:13px}
+
+  @media(max-width:880px){
+    .trades{grid-template-columns:repeat(2,1fr)}
+    .stage-grid{grid-template-columns:1fr}
+    .phone{position:relative;top:0;margin:0 auto}
+    h1{font-size:27px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="logo"><span class="dot">🔧</span> Svend</div>
+    <span class="live">● LIVE DEMO</span>
+  </div>
+
+  <h1>Prøv <span class="hl">Svend</span> live — leg kunde og book en tid</h1>
+  <p class="lead">Vælg dit fag herunder. Så kan du selv skrive med Svend på <b>SMS</b> — eller <b>tale</b> med ham gennem mikrofonen — præcis som dine kunder ville. Han regner en pris ud og booker tiden.</p>
+
+  <!-- STEP 1: TRADE PICKER -->
+  <div class="steplab"><span class="num">1</span> Vælg dit fag</div>
+  <div class="trades" id="trades"></div>
+
+  <!-- STEP 2: STAGE -->
+  <div class="stage" id="stage">
+    <div class="stage-grid">
+
+      <!-- PHONE -->
+      <div class="phone">
+        <div class="pnotch"></div>
+        <div class="phead">
+          <div class="av" id="pAv">🔧</div>
+          <div><div class="nm" id="pName">Svend</div><div class="st" id="pStatus">● Online</div></div>
+        </div>
+        <div class="tabs">
+          <div class="tab on" id="tabSms" onclick="switchTab('sms')">💬 SMS</div>
+          <div class="tab" id="tabVoice" onclick="switchTab('voice')">🎙️ Tale</div>
+        </div>
+
+        <!-- SMS MODE -->
+        <div id="smsMode">
+          <div class="chat" id="chat"></div>
+          <div class="quicks" id="quicks"></div>
+          <div class="inbar">
+            <input id="input" placeholder="Skriv som kunden…" onkeydown="if(event.key==='Enter')sendTyped()">
+            <button onclick="sendTyped()">➤</button>
+          </div>
+        </div>
+
+        <!-- VOICE MODE -->
+        <div id="voiceMode" style="display:none">
+          <div class="voice">
+            <div class="vlog" id="vlog"></div>
+            <button class="mic" id="mic" onclick="toggleMic()">🎙️</button>
+            <div class="vhint" id="vhint">Tryk og tal — sig fx "jeg vil gerne bestille en tid"</div>
+            <div class="vwarn" id="vwarn">Din browser understøtter ikke tale. Prøv Chrome på computer/Android — eller brug SMS-fanen. 🙂</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE PANEL -->
+      <div class="side">
+        <div class="steplab"><span class="num">2</span> Leg kunde</div>
+        <h2 id="sideTitle">Sådan gør du</h2>
+        <p class="sd" id="sideSub">Forestil dig, at du er kunden, der ringer/skriver til dit firma. Prøv det hele:</p>
+        <div class="try">
+          <div class="tryrow"><div class="n">1</div><div><h4>Spørg om pris</h4><p>Skriv "hvad koster det?" — Svend åbner en beregner, hvor du klikker opgaven sammen og får en pris med det samme.</p></div></div>
+          <div class="tryrow"><div class="n">2</div><div><h4>Book en tid</h4><p>Sig "jeg vil booke en tid". Svend finder en ledig tid og bekræfter aftalen.</p></div></div>
+          <div class="tryrow"><div class="n">3</div><div><h4>Se hvad mester får</h4><p>Til sidst viser vi den SMS, du (mesteren) ville få — med kunde, opgave, pris og tid.</p></div></div>
+        </div>
+
+        <div class="cust" id="custBox">
+          <h3>💡 Bygget til <span id="custTrade">dit fag</span></h3>
+          <p id="custText">Svend kender dine priser. Kunden kan selv regne et tilbud ud — her er nogle af de priser, der er lagt ind for dit fag:</p>
+          <div class="prices" id="custPrices"></div>
+        </div>
+
+        <div class="cta">
+          <h3>Vil du have din egen Svend?</h3>
+          <p>Med dine priser, dit firmanavn og din stemme. Klar på 3 dage.</p>
+          <a class="btn" href="index.html#priser">Se pakker & priser →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   SVEND — LIVE DEMO ENGINE
+   ---------------------------------------------------------------------------
+   >>> ÆNDRE PRISER OG FAG HER <<<  (alt er data-drevet — tilføj/ret frit)
+   Hver branche har sine egne "items" med pris + enhed. Det er DET, der gør
+   produktet customizeable pr. branche.
+   ========================================================================= */
+const TRADES = {
+  vinduespudser:{
+    name:"Vinduespudser", firm:"Klart Udsyn Vinduespolering", emoji:"🪟", desc:"pr. rude",
+    greet:"Hej og velkommen til Klart Udsyn! 🪟 Jeg er Svend. Skal du have pudset vinduer? Så finder jeg en pris og en tid til dig.",
+    unit:"stk", min:250,
+    items:[
+      {id:"lille", em:"🔲", label:"Lille vindue", sub:"fx toilet/køkkenvindue", price:25},
+      {id:"std",   em:"🪟", label:"Standard vindue", sub:"almindeligt vindue", price:35},
+      {id:"stor",  em:"🖼️", label:"Stort / panorama", sub:"store ruder", price:60},
+      {id:"dor",   em:"🚪", label:"Fransk altandør", sub:"dør med glas", price:55},
+      {id:"tag",   em:"🔺", label:"Ovenlys / tagvindue", sub:"svært tilgængeligt", price:70},
+    ]
+  },
+  fugemand:{
+    name:"Fugemand", firm:"TætFuge ApS", emoji:"🧴", desc:"pr. meter",
+    greet:"Hej, du er kommet til TætFuge! 🧴 Jeg er Svend. Skal du have fuget? Fortæl mig hvor, så regner jeg meterprisen for dig.",
+    unit:"m", min:1500,
+    items:[
+      {id:"bad",  em:"🛁", label:"Badeværelse (vådrum)", sub:"pr. meter fuge", price:90},
+      {id:"kok",  em:"🍳", label:"Køkken", sub:"bordplade/vask", price:75},
+      {id:"vin",  em:"🪟", label:"Omkring vinduer", sub:"udvendig fuge", price:85},
+      {id:"beton",em:"🧱", label:"Dilatationsfuge (beton)", sub:"pr. meter", price:110},
+      {id:"fjern",em:"🧹", label:"Fjern gammel fuge", sub:"pr. meter", price:40},
+    ]
+  },
+  vvs:{
+    name:"VVS", firm:"Nordjysk VVS", emoji:"🔧", desc:"faste priser",
+    greet:"Hej, velkommen til Nordjysk VVS. 🔧 Jeg er Svend. Hvad kan vi hjælpe med — er det akut, eller skal du have et tilbud?",
+    unit:"stk", min:0,
+    items:[
+      {id:"bat", em:"🚿", label:"Nyt blandingsbatteri", sub:"monteret", price:850},
+      {id:"toi", em:"🚽", label:"Nyt toilet monteret", sub:"inkl. montering", price:1900},
+      {id:"hane",em:"🚰", label:"Udskift vandhane", sub:"køkken/bad", price:750},
+      {id:"rad", em:"♨️", label:"Ny radiator", sub:"monteret", price:2400},
+      {id:"akut",em:"🆘", label:"Akut udkald (vandskade)", sub:"udkald + timer", price:1500},
+    ]
+  },
+  elektriker:{
+    name:"Elektriker", firm:"Strøm & Co.", emoji:"⚡", desc:"faste priser",
+    greet:"Hej, du er kommet til Strøm & Co. ⚡ Jeg er Svend. Hvad skal du have lavet — nyt el-arbejde eller fejlfinding?",
+    unit:"stk", min:0,
+    items:[
+      {id:"stik",em:"🔌", label:"Ny stikkontakt", sub:"monteret", price:650},
+      {id:"lamp",em:"💡", label:"Montering af lampe", sub:"pr. stk", price:550},
+      {id:"tav", em:"🔋", label:"Eftersyn af eltavle", sub:"gennemgang", price:1200},
+      {id:"hpfi",em:"⚠️", label:"Skift HPFI-relæ", sub:"sikkerhed", price:1400},
+      {id:"lad", em:"🚗", label:"Ladestander (elbil)", sub:"fra-pris", price:6500},
+    ]
+  },
+  tomrer:{
+    name:"Tømrer", firm:"Træværk & Sønner", emoji:"🪚", desc:"pr. stk / m²",
+    greet:"Hej, velkommen til Træværk & Sønner. 🪚 Jeg er Svend. Hvad drømmer du om — dør, gulv, terrasse eller noget helt andet?",
+    unit:"stk", min:0,
+    items:[
+      {id:"dor", em:"🚪", label:"Montér indvendig dør", sub:"pr. stk", price:1500},
+      {id:"gulv",em:"🪵", label:"Nyt trægulv", sub:"pr. m²", price:450, uOverride:"m²"},
+      {id:"ter", em:"🏡", label:"Terrasse", sub:"pr. m²", price:950, uOverride:"m²"},
+      {id:"kok", em:"🍽️", label:"Køkkenopsætning", sub:"fra-pris", price:6000},
+    ]
+  },
+  maler:{
+    name:"Maler", firm:"Pang Farver", emoji:"🎨", desc:"pr. m²",
+    greet:"Hej, du er kommet til Pang Farver! 🎨 Jeg er Svend. Hvad skal males — vægge, loft eller et helt værelse?",
+    unit:"m²", min:1200,
+    items:[
+      {id:"vaeg",em:"🖌️", label:"Vægge", sub:"pr. m²", price:85},
+      {id:"loft",em:"⬜", label:"Loft", sub:"pr. m²", price:95},
+      {id:"trae",em:"🚪", label:"Træværk / dør", sub:"pr. stk", price:350, uOverride:"stk"},
+      {id:"spar",em:"🧽", label:"Spartling", sub:"pr. m²", price:60},
+    ]
+  },
+  murer:{
+    name:"Murer", firm:"Sten på Sten", emoji:"🧱", desc:"pr. m²",
+    greet:"Hej, velkommen til Sten på Sten. 🧱 Jeg er Svend. Skal du have muret, pudset eller lagt fliser?",
+    unit:"m²", min:1500,
+    items:[
+      {id:"mur", em:"🧱", label:"Opmuring", sub:"pr. m²", price:1100},
+      {id:"puds",em:"🪣", label:"Pudsning", sub:"pr. m²", price:350},
+      {id:"fli", em:"◻️", label:"Fliser (bad)", sub:"pr. m²", price:750},
+    ]
+  },
+  kloak:{
+    name:"Kloak", firm:"Rent Rør", emoji:"🚽", desc:"faste priser",
+    greet:"Hej, du er kommet til Rent Rør. 🚽 Jeg er Svend. Er det en tilstopning der haster, eller planlagt arbejde?",
+    unit:"stk", min:0,
+    items:[
+      {id:"spul",em:"💦", label:"Spuling / rensning", sub:"pr. gang", price:1800},
+      {id:"tv",  em:"📹", label:"TV-inspektion", sub:"af rør", price:2500},
+      {id:"akut",em:"🆘", label:"Akut tilstopning", sub:"udkald", price:1900},
+    ]
+  },
+};
+
+/* ---------- STATE ---------- */
+let TRADE=null, STEP="start", EST={items:[],total:0}, ADDRESS="", TIME="", MODE="sms";
+
+/* ---------- BUILD TRADE PICKER ---------- */
+const tradesEl=document.getElementById('trades');
+Object.keys(TRADES).forEach(key=>{
+  const t=TRADES[key];
+  const d=document.createElement('div');
+  d.className='trade';d.dataset.key=key;
+  d.innerHTML=`<div class="em">${t.emoji}</div><div class="nm">${t.name}</div><div class="ds">${t.desc}</div>`;
+  d.onclick=()=>selectTrade(key,d);
+  tradesEl.appendChild(d);
+});
+
+function selectTrade(key,el){
+  document.querySelectorAll('.trade').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  TRADE=TRADES[key]; STEP="start"; EST={items:[],total:0}; ADDRESS=""; TIME="";
+  // fill phone header + side
+  document.getElementById('pAv').textContent=TRADE.emoji;
+  document.getElementById('pName').textContent="Svend · "+TRADE.firm;
+  document.getElementById('custTrade').textContent=TRADE.name.toLowerCase();
+  const cp=document.getElementById('custPrices'); cp.innerHTML="";
+  TRADE.items.slice(0,5).forEach(it=>{
+    const u=it.uOverride||TRADE.unit;
+    const c=document.createElement('div');c.className='chip';
+    c.innerHTML=`${it.em} ${it.label} <b>${fmt(it.price)}/${u}</b>`;
+    cp.appendChild(c);
+  });
+  // show stage, reset chat
+  document.getElementById('stage').classList.add('on');
+  document.getElementById('chat').innerHTML="";
+  document.getElementById('vlog').innerHTML="";
+  clearQuicks();
+  switchTab('sms');
+  document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'start'});
+  // Svend opens
+  setTimeout(()=>svendSays(TRADE.greet,()=>{
+    STEP="menu";
+    showQuicks([
+      {t:"💰 Hvad koster det?",a:()=>userThenRoute("Hvad koster det?")},
+      {t:"📅 Book en tid",a:()=>userThenRoute("Jeg vil booke en tid")},
+      {t:"❓ Spørgsmål",a:()=>userThenRoute("Jeg har et spørgsmål")},
+    ]);
+  }),500);
+}
+
+/* ---------- HELPERS ---------- */
+const fmt=n=>Math.round(n).toLocaleString('da-DK')+" kr";
+const chat=()=>document.getElementById('chat');
+const vlog=()=>document.getElementById('vlog');
+
+function bubble(who,html,cls){
+  const target = MODE==='voice'? vlog() : chat();
+  const d=document.createElement('div');
+  d.className='b '+cls;
+  const label = cls==='svend'?'Svend':(cls==='me'?'Dig (kunde)':'');
+  d.innerHTML=(label?`<div class="who">${label}</div>`:'')+html;
+  target.appendChild(d);target.scrollTop=target.scrollHeight;
+  return d;
+}
+function meSays(txt){ bubble('me',escapeHtml(txt),'me'); }
+function typing(cb,delay){
+  const target = MODE==='voice'? vlog() : chat();
+  const t=document.createElement('div');t.className='typing';
+  t.innerHTML='<span></span><span></span><span></span>';
+  target.appendChild(t);target.scrollTop=target.scrollHeight;
+  setTimeout(()=>{t.remove();cb&&cb();}, delay|| (600+Math.random()*400));
+}
+function svendSays(txt,cb){
+  typing(()=>{
+    bubble('svend',escapeHtml(txt),'svend');
+    if(MODE==='voice') speak(txt);
+    cb&&cb();
+  });
+}
+function escapeHtml(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+/* ---------- QUICK REPLIES ---------- */
+function showQuicks(list){
+  const q=document.getElementById('quicks');q.innerHTML="";
+  list.forEach(o=>{
+    const b=document.createElement('div');b.className='quick';b.textContent=o.t;
+    b.onclick=()=>{clearQuicks();o.a();};
+    q.appendChild(b);
+  });
+}
+function clearQuicks(){document.getElementById('quicks').innerHTML="";}
+
+/* ---------- TYPED / ROUTED INPUT ---------- */
+function sendTyped(){
+  const i=document.getElementById('input');const v=i.value.trim();
+  if(!v)return; i.value="";
+  meSays(v); route(v);
+}
+function userThenRoute(txt){ meSays(txt); route(txt); }
+
+/* ---------- THE ROUTER (works for both SMS + voice) ---------- */
+function route(raw){
+  if(!TRADE)return;
+  const t=raw.toLowerCase();
+  clearQuicks();
+
+  // booking address step
+  if(STEP==="askAddr"){ ADDRESS=raw; return offerTimes(); }
+
+  // price / estimate intent
+  if(/pris|kost|tilbud|billig|estimat|hvad koster|regne/.test(t) && STEP!=="booking"){
+    return openEstimator();
+  }
+  // booking intent
+  if(/book|tid|aftale|komme|kan du komme|hvornår|besøg/.test(t)){
+    return startBooking();
+  }
+  // affirm after estimate
+  if(STEP==="afterEst" && /ja|jeps|gerne|ok|okay|klart|det lyder|book/.test(t)){
+    return startBooking();
+  }
+  if(/for dyrt|billiger|rabat|dyrt/.test(t)){
+    return svendSays("Jeg forstår! Vi giver gerne et samlet tilbud, hvor der ofte er lidt at spare på større opgaver. Skal jeg booke en tid, hvor mester kigger forbi og giver en fast pris — helt gratis og uforpligtende?",()=>{
+      STEP="afterEst";
+      showQuicks([{t:"👍 Ja, book gratis besøg",a:()=>userThenRoute("Ja tak, book en tid")},{t:"💰 Se pris igen",a:()=>userThenRoute("Hvad koster det?")}]);
+    });
+  }
+  if(/hej|goddag|hallo|dav/.test(t) && t.length<14){
+    return svendSays("Hej igen! 🙂 Vil du høre en pris, eller skal jeg booke en tid til dig?",()=>menuQuicks());
+  }
+  if(/tak|fedt|super|perfekt/.test(t)){
+    return svendSays("Selv tak! Er der andet, jeg kan hjælpe med?",()=>menuQuicks());
+  }
+  if(/akut|haster|nu|hurtig|vandskade|oversvøm/.test(t)){
+    return svendSays("Det lyder akut — det tager vi alvorligt! Jeg får en mand ud til dig hurtigst muligt. Hvad er adressen?",()=>{STEP="askAddr";});
+  }
+  // fallback — helpful nudge
+  return svendSays("Det hjælper jeg gerne med! Vil du have en pris, eller skal jeg booke en tid?",()=>menuQuicks());
+}
+
+function menuQuicks(){
+  STEP="menu";
+  showQuicks([
+    {t:"💰 Hvad koster det?",a:()=>userThenRoute("Hvad koster det?")},
+    {t:"📅 Book en tid",a:()=>userThenRoute("Jeg vil booke en tid")},
+  ]);
+}
+
+/* ---------- ESTIMATOR ---------- */
+function openEstimator(){
+  STEP="estimating";
+  svendSays("Klart! Vælg hvad du skal have lavet herunder, så regner jeg prisen med det samme. 👇",()=>{
+    if(MODE==='voice'){ // voice can't easily click — switch note
+      svendSays("Åbn gerne SMS-fanen for at klikke opgaven sammen — eller sig bare hvad du skal have lavet, så hjælper jeg.");
+    }
+    renderEstimator();
+  });
+}
+function renderEstimator(){
+  const target = MODE==='voice'? vlog() : chat();
+  const box=document.createElement('div');box.className='estim';
+  let rows="";
+  TRADE.items.forEach(it=>{
+    const u=it.uOverride||TRADE.unit;
+    rows+=`<div class="erow">
+      <div class="ei">${it.em}</div>
+      <div class="el">${it.label}<small>${fmt(it.price)} / ${u} · ${it.sub}</small></div>
+      <div class="step">
+        <button onclick="estStep('${it.id}',-1,this)">−</button>
+        <div class="q" id="q_${it.id}">0</div>
+        <button onclick="estStep('${it.id}',1,this)">+</button>
+      </div></div>`;
+  });
+  box.innerHTML=`<div class="et">${TRADE.emoji} Din pris — ${TRADE.name}</div>
+    <div class="es">Klik opgaven sammen. Prisen opdateres live.</div>
+    ${rows}
+    <div class="etot"><span class="t">Estimeret pris${TRADE.min?` (min. ${fmt(TRADE.min)})`:''}</span><span class="v" id="estTot">0 kr</span></div>
+    <button class="esend" id="estSend" disabled onclick="sendEstimate()">Send pris til Svend ✓</button>`;
+  target.appendChild(box);target.scrollTop=target.scrollHeight;
+  window._estQ={};
+}
+function estStep(id,dir,btn){
+  window._estQ=window._estQ||{};
+  const cur=(window._estQ[id]||0)+dir;
+  window._estQ[id]=Math.max(0,cur);
+  document.getElementById('q_'+id).textContent=window._estQ[id];
+  recalc();
+}
+function recalc(){
+  let total=0, items=[];
+  TRADE.items.forEach(it=>{
+    const q=(window._estQ&&window._estQ[it.id])||0;
+    if(q>0){ total+=q*it.price; items.push({label:it.label,qty:q,price:it.price,u:(it.uOverride||TRADE.unit)}); }
+  });
+  let shown=total;
+  if(TRADE.min && total>0 && total<TRADE.min) shown=TRADE.min;
+  EST={items,total:shown,raw:total};
+  document.getElementById('estTot').textContent=fmt(shown);
+  document.getElementById('estSend').disabled = total<=0;
+}
+function sendEstimate(){
+  // freeze widget
+  document.querySelectorAll('.estim .step button').forEach(b=>b.disabled=true);
+  const btn=document.getElementById('estSend'); if(btn){btn.disabled=true;btn.textContent="Sendt ✓";}
+  const summary = EST.items.map(i=>`${i.qty}× ${i.label}`).join(", ");
+  meSays(`Jeg vil gerne have: ${summary}`);
+  STEP="afterEst";
+  svendSays(`Perfekt! 🙌 Det bliver ca. ${fmt(EST.total)}. Det er et vejledende estimat — mester bekræfter den endelige pris på stedet. Skal jeg booke en tid til dig?`,()=>{
+    showQuicks([
+      {t:"✅ Ja tak, book en tid",a:()=>userThenRoute("Ja tak, book en tid")},
+      {t:"🤔 Kan jeg få det billigere?",a:()=>userThenRoute("Kan jeg få det lidt billigere?")},
+    ]);
+  });
+}
+
+/* ---------- BOOKING ---------- */
+function startBooking(){
+  STEP="askAddr";
+  svendSays("Super! 📅 Hvad er adressen, jeg skal sende en mand ud til?",()=>{
+    showQuicks([{t:"📍 Solvej 12, 9000 Aalborg",a:()=>{ADDRESS="Solvej 12, 9000 Aalborg";meSays(ADDRESS);offerTimes();}}]);
+  });
+}
+function offerTimes(){
+  clearQuicks(); STEP="booking";
+  svendSays("Tak! Jeg har disse ledige tider — hvad passer dig bedst?",()=>{
+    showQuicks([
+      {t:"🕑 I dag kl. 14:00",a:()=>pickTime("i dag kl. 14:00")},
+      {t:"🕘 I morgen kl. 09:00",a:()=>pickTime("i morgen kl. 09:00")},
+      {t:"🕛 Fredag kl. 12:00",a:()=>pickTime("fredag kl. 12:00")},
+    ]);
+  });
+}
+function pickTime(t){
+  TIME=t; meSays("Det passer perfekt: "+t);
+  svendSays(`Så er det på plads! ✅ ${TRADE.firm} kommer ${t} på ${ADDRESS}. Du får en bekræftelse på SMS nu. Tak fordi du valgte os!`,()=>{
+    setTimeout(showMesterCard,500);
+  });
+}
+function showMesterCard(){
+  const target = MODE==='voice'? vlog() : chat();
+  const c=document.createElement('div');c.className='syscard';
+  const opg = EST.items.length? EST.items.map(i=>`${i.qty}× ${i.label}`).join(", ") : TRADE.name+"-opgave";
+  const pris = EST.total? fmt(EST.total) : "På besøg";
+  c.innerHTML=`<div class="h">📩 SMS sendt til mester — netop nu</div>
+    <div class="r"><span>Kunde</span><b>Ny kunde · 20 XX XX XX</b></div>
+    <div class="r"><span>Opgave</span><b>${escapeHtml(opg)}</b></div>
+    <div class="r"><span>Estimat</span><b>${pris}</b></div>
+    <div class="r"><span>Adresse</span><b>${escapeHtml(ADDRESS||'—')}</b></div>
+    <div class="r"><span>Tid</span><b>${escapeHtml(TIME||'—')}</b></div>`;
+  target.appendChild(c);target.scrollTop=target.scrollHeight;
+  setTimeout(()=>{
+    svendSays("👆 Sådan ville det foregå for DIN kunde — helt uden du løfter en finger. Vil du prøve igen, eller se pakkerne?",()=>{
+      showQuicks([
+        {t:"🔁 Prøv igen",a:()=>{document.getElementById('chat').innerHTML="";vlog().innerHTML="";EST={items:[],total:0};ADDRESS="";TIME="";selectAgain();}},
+        {t:"📦 Se pakker & priser",a:()=>{window.location.href="index.html#priser";}},
+      ]);
+    });
+  },700);
+}
+function selectAgain(){
+  STEP="menu";
+  svendSays(TRADE.greet,()=>menuQuicks());
+}
+
+/* ---------- TAB SWITCH ---------- */
+function switchTab(m){
+  MODE=m;
+  document.getElementById('tabSms').classList.toggle('on',m==='sms');
+  document.getElementById('tabVoice').classList.toggle('on',m==='voice');
+  document.getElementById('smsMode').style.display = m==='sms'?'block':'none';
+  document.getElementById('voiceMode').style.display = m==='voice'?'block':'none';
+}
+
+/* ---------- VOICE (Web Speech API) ---------- */
+let recog=null, listening=false, voiceReady=false;
+function initVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ document.getElementById('vwarn').style.display='block'; return; }
+  recog=new SR(); recog.lang='da-DK'; recog.interimResults=false; recog.maxAlternatives=1;
+  recog.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    meSays(txt); route(txt);
+  };
+  recog.onerror=e=>{ setMic(false); document.getElementById('vhint').textContent="Kunne ikke høre dig — prøv igen. 🙂"; };
+  recog.onend=()=>{ setMic(false); };
+  voiceReady=true;
+}
+function toggleMic(){
+  if(!voiceReady) initVoice();
+  if(!recog){ document.getElementById('vwarn').style.display='block'; return; }
+  if(listening){ recog.stop(); setMic(false); return; }
+  // ensure Svend has greeted in voice log
+  if(vlog().children.length===0 && TRADE){ bubble('svend',escapeHtml(TRADE.greet),'svend'); speak(TRADE.greet); }
+  try{ recog.start(); setMic(true); }catch(e){ setMic(false); }
+}
+function setMic(on){
+  listening=on;
+  const m=document.getElementById('mic');
+  m.classList.toggle('rec',on);
+  m.textContent=on?'⏹️':'🎙️';
+  document.getElementById('vhint').textContent = on? "Lytter… tal nu" : "Tryk og tal — sig fx \"hvad koster det?\"";
+}
+/* Text-to-speech */
+let daVoice=null;
+function loadVoices(){
+  const vs=window.speechSynthesis?window.speechSynthesis.getVoices():[];
+  daVoice = vs.find(v=>v.lang && v.lang.toLowerCase().startsWith('da')) || null;
+}
+if(window.speechSynthesis){ loadVoices(); window.speechSynthesis.onvoiceschanged=loadVoices; }
+function speak(txt){
+  if(!window.speechSynthesis) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(txt.replace(/[🪟🧴🔧⚡🪚🎨🧱🚽💰📅❓🙌✅👍🤔📍🕑🕘🕛📩👆🔁📦🆘💦📹]/g,''));
+    u.lang='da-DK'; if(daVoice)u.voice=daVoice; u.rate=1.02; u.pitch=1.0;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+</script>
+</body>
+</html>

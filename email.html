@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Svend — din digitale svend</title>
+<!--
+  ========================================================================
+  MARKETING-MAIL — sådan bruger du den
+  ------------------------------------------------------------------------
+  1) Erstat alle {{...}} felter (find dem med Ctrl+F):
+       {{DEMO_URL}}      -> linket til din live demo (fx https://ditdomæne.dk/demo.html)
+       {{FIRMA}}         -> modtagerens firmanavn (dit email-værktøj kan flette det ind)
+       {{DIT_NAVN}}      -> dit navn
+       {{DIT_TLF}}       -> dit telefonnummer
+       {{AFMELD_URL}}    -> afmeldingslink (påkrævet ved markedsføringsmail)
+  2) Kopiér HELE denne HTML ind i dit email-værktøj (fx MailerLite, Mailchimp,
+     Brevo, ActiveCampaign) som "custom HTML".
+  3) Emnelinje-forslag (test flere):
+       - "{{FIRMA}}: hvor mange opkald mister I om ugen?"
+       - "Din telefon ringer — du står på stilladset. Hvem tager den?"
+       - "Prøv jeres nye 'digitale svend' live (2 min)"
+  Email-klienter kører ikke JavaScript — derfor er den LIVE demo en knap,
+  der åbner demo.html i browseren. Selve mailen er ren HTML (tabeller).
+  ========================================================================
+-->
+<style>
+  /* Kun til visning i browser; email-klienter bruger inline styles nedenfor */
+  body{margin:0;padding:0;background:#0f1115}
+  a{text-decoration:none}
+  @media only screen and (max-width:600px){
+    .container{width:100%!important}
+    .px{padding-left:22px!important;padding-right:22px!important}
+    .h1{font-size:28px!important;line-height:1.15!important}
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#0f1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#0f1115;">Hver 4. opkald til håndværkere bliver aldrig besvaret. Mød Svend — den digitale svend, der tager telefonen, når du ikke kan. Prøv ham live.</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f1115;padding:26px 12px;">
+<tr><td align="center">
+  <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#161a21;border:1px solid #2a323f;border-radius:18px;overflow:hidden;">
+
+    <!-- HEADER -->
+    <tr><td class="px" style="padding:22px 34px;border-bottom:1px solid #2a323f;">
+      <table role="presentation" width="100%"><tr>
+        <td style="font-weight:800;font-size:20px;color:#f4f6fa;">
+          <span style="display:inline-block;width:30px;height:30px;background:#ff8a1e;border-radius:8px;text-align:center;line-height:30px;font-size:16px;">🔧</span>
+          &nbsp;Svend
+        </td>
+        <td align="right" style="font-size:12px;color:#28c76f;font-weight:700;">● Taler dansk · Svarer 24/7</td>
+      </tr></table>
+    </td></tr>
+
+    <!-- HERO -->
+    <tr><td class="px" style="padding:38px 34px 8px;">
+      <div style="color:#ff8a1e;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;">Til {{FIRMA}}</div>
+      <h1 class="h1" style="margin:12px 0 8px;font-size:34px;line-height:1.12;color:#f4f6fa;font-weight:850;letter-spacing:-.02em;">
+        Din telefon ringer.<br>Du står på stilladset.<br><span style="color:#ff8a1e;">Hvem tager den?</span>
+      </h1>
+      <p style="margin:14px 0 0;font-size:17px;line-height:1.55;color:#9aa7b8;">
+        Hver fjerde opkald til håndværkere bliver aldrig besvaret — og de kunder ringer bare videre til den næste. Det er tusindvis af kroner ud ad vinduet hver måned.
+      </p>
+    </td></tr>
+
+    <!-- SMS PREVIEW (statisk) -->
+    <tr><td class="px" style="padding:24px 34px 4px;">
+      <div style="background:#0b0d11;border:1px solid #2a323f;border-radius:16px;padding:16px 16px 18px;">
+        <div style="font-size:12px;color:#9aa7b8;margin-bottom:12px;">📲 Sådan svarer Svend din kunde — mens du arbejder:</div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:4px 0;">
+            <span style="display:inline-block;background:#1c222c;border:1px solid #2a323f;color:#f4f6fa;padding:9px 13px;border-radius:13px;border-bottom-left-radius:4px;font-size:14px;max-width:78%;">Hej, mit vandrør er sprunget — det fosser!</span>
+          </td></tr>
+          <tr><td align="right" style="padding:4px 0;">
+            <span style="display:inline-block;background:#ff8a1e;color:#111;padding:9px 13px;border-radius:13px;border-bottom-right-radius:4px;font-size:14px;font-weight:500;max-width:82%;">Det klarer vi! Har du lukket for hovedhanen? Jeg sender en blikkenslager til dig i dag kl. 14 — hvad er adressen?</span>
+          </td></tr>
+          <tr><td style="padding:4px 0;">
+            <span style="display:inline-block;background:#1c222c;border:1px solid #2a323f;color:#f4f6fa;padding:9px 13px;border-radius:13px;border-bottom-left-radius:4px;font-size:14px;max-width:78%;">Solvej 12, Aalborg. Perfekt, tak!</span>
+          </td></tr>
+          <tr><td style="padding:10px 0 0;">
+            <span style="display:inline-block;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.3);color:#28c76f;padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:700;">✔ Opgave booket · SMS sendt til mester</span>
+          </td></tr>
+        </table>
+      </div>
+    </td></tr>
+
+    <!-- CTA 1: LIVE DEMO -->
+    <tr><td class="px" align="center" style="padding:28px 34px 6px;">
+      <div style="font-size:18px;color:#f4f6fa;font-weight:700;margin-bottom:6px;">Prøv Svend live — helt gratis 👇</div>
+      <p style="margin:0 0 18px;font-size:14px;color:#9aa7b8;">Vælg dit fag, leg kunde, og book en tid — på SMS eller med din egen stemme. Tager 2 minutter.</p>
+      <a href="{{DEMO_URL}}" style="display:inline-block;background:#ff8a1e;color:#111;font-weight:800;font-size:17px;padding:16px 34px;border-radius:12px;">
+        ▶ Prøv Svend live — vælg dit fag
+      </a>
+      <div style="font-size:12px;color:#5b6472;margin-top:10px;">Ingen tilmelding · Åbner i din browser</div>
+    </td></tr>
+
+    <!-- VALUE POINTS -->
+    <tr><td class="px" style="padding:26px 34px 4px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #2a323f;">
+        <tr><td style="padding:16px 0 6px;">
+          <table role="presentation"><tr>
+            <td valign="top" style="width:34px;font-size:22px;">📞</td>
+            <td style="color:#f4f6fa;font-size:15px;"><b>Svarer hvert opkald</b> — 24/7, også aften og weekend, aldrig en telefonsvarer.</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding:6px 0;">
+          <table role="presentation"><tr>
+            <td valign="top" style="width:34px;font-size:22px;">📅</td>
+            <td style="color:#f4f6fa;font-size:15px;"><b>Booker opgaven i din kalender</b> — og sender dig en SMS med navn, opgave og adresse.</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding:6px 0;">
+          <table role="presentation"><tr>
+            <td valign="top" style="width:34px;font-size:22px;">💰</td>
+            <td style="color:#f4f6fa;font-size:15px;"><b>Regner tilbud ud for dit fag</b> — dine egne priser, så kunden får en pris med det samme.</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding:6px 0 2px;">
+          <table role="presentation"><tr>
+            <td valign="top" style="width:34px;font-size:22px;">🛡️</td>
+            <td style="color:#f4f6fa;font-size:15px;"><b>Betaler for sig selv</b> — ét reddet opkald om måneden, og resten er ren gevinst.</td>
+          </tr></table>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <!-- PRICE STRIP -->
+    <tr><td class="px" style="padding:22px 34px 6px;">
+      <div style="background:linear-gradient(135deg,#1c222c,#161a21);border:1px solid #2a323f;border-radius:14px;padding:18px 20px;text-align:center;">
+        <div style="color:#9aa7b8;font-size:13px;">Fra</div>
+        <div style="color:#ffb703;font-size:30px;font-weight:850;line-height:1.1;">995 kr / md</div>
+        <div style="color:#9aa7b8;font-size:13px;margin-top:2px;">Ingen binding · 30 dages pengene-tilbage-garanti</div>
+      </div>
+    </td></tr>
+
+    <!-- CTA 2: CALL -->
+    <tr><td class="px" align="center" style="padding:22px 34px 30px;">
+      <a href="{{DEMO_URL}}" style="display:inline-block;background:transparent;border:1px solid #2a323f;color:#f4f6fa;font-weight:700;font-size:15px;padding:13px 26px;border-radius:12px;">
+        Se pakker & priser →
+      </a>
+      <p style="margin:16px 0 0;font-size:14px;color:#9aa7b8;">
+        Eller ring til mig, så tager vi en snak: <b style="color:#f4f6fa;">{{DIT_TLF}}</b><br>
+        Venlig hilsen, {{DIT_NAVN}}
+      </p>
+    </td></tr>
+
+    <!-- FOOTER -->
+    <tr><td class="px" style="padding:20px 34px;border-top:1px solid #2a323f;background:#12151b;">
+      <p style="margin:0;font-size:12px;color:#5b6472;line-height:1.6;">
+        Du får denne mail, fordi vi hjælper håndværkere med at fange flere kunder. Vil du ikke modtage flere?
+        <a href="{{AFMELD_URL}}" style="color:#9aa7b8;text-decoration:underline;">Afmeld her</a>.<br>
+        Svend · Bygget til danske håndværkere · Alle priser ekskl. moms.
+      </p>
+    </td></tr>
+
+  </table>
+</td></tr>
+</table>
+</body>
+</html>

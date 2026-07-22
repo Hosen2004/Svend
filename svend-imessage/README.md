@@ -22,6 +22,36 @@ Det beviser at hjernen virker. Derefter kobler du den på iMessage nedenfor.
 
 ---
 
+## 🎯 Auto-opfølgning på nye leads (Monday.com)
+
+Når et nyt lead lander i dit Monday-board, skriver Noah automatisk til dem **4 minutter efter**:
+
+> *"Hey [Fornavn], jeg så lige at du har skrevet dig op til et tilbud på vinduerne derhjemme.
+> Jeg er lige ude og pudse vinduer i en halv time mere — må jeg ringe til dig der?
+> Bedste hilsner Noah, vinduespudser"*
+
+Start den (kræver IKKE BlueBubbles — kun en Monday-nøgle + at Messages er logget ind):
+```bash
+node leads.js
+```
+
+**Indbygget sikkerhed:**
+- **`dryRun: true`** (standard) → sender INTET, logger kun hvem den *ville* skrive til. Perfekt til at teste.
+- **`allowedNumbers`** → whitelist. Kun numre på listen får beskeder. Start med kun dit testnummer.
+  Tom liste `[]` = alle numre (sæt først dette, når du er 100% klar).
+- Reagerer **kun** på leads oprettet efter den startes — rører **aldrig** de gamle leads i boardet.
+- Sender aldrig samme lead to gange.
+
+**Sådan tænder du for rigtigt (når du er klar):**
+1. Hent en Monday-nøgle: monday.com → din profil → **Udvikler → My Access Tokens** → kopiér.
+2. Sæt den ind i `config.json` under `monday.apiToken`.
+3. Kør `node leads.js` — den starter i **tør-test**. Lav et test-lead og se den fange det.
+4. Når du er tryg: sæt `dryRun: false` og udvid `allowedNumbers` (eller sæt `[]` for alle).
+
+Test logikken uden netværk: `node test-leads.js` (skal vise 0 fejl).
+
+---
+
 ## Sådan hænger det sammen
 
 ```

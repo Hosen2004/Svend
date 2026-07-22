@@ -1,6 +1,6 @@
 {
-  "firm": "Nordjysk VVS",
-  "tradeKey": "vvs",
+  "firm": "Puds og Plus",
+  "tradeKey": "vinduespudser",
   "ownerPhone": "+45 20 00 00 00",
 
   "useClaude": false,
@@ -9,13 +9,25 @@
 
   "port": 8787,
 
+  "followupMessage": "Hey {{navn}}, jeg så lige at du har skrevet dig op til et tilbud på vinduerne derhjemme. Jeg er lige ude og pudse vinduer i en halv time mere — må jeg ringe til dig der? Bedste hilsner Noah, vinduespudser",
+
+  "monday": {
+    "apiToken": "",
+    "boardId": 5089681587,
+    "phoneColumnId": "text_mkzb16sg",
+    "delayMinutes": 4,
+    "pollSeconds": 30,
+    "dryRun": true,
+    "allowedNumbers": ["+4530803017"]
+  },
+
   "_hjælp": {
-    "firm": "Dit firmanavn — det Svend præsenterer sig med.",
-    "tradeKey": "Vælg fag: vvs, elektriker, vinduespudser, fugemand, tomrer, maler, murer, kloak.",
-    "ownerPhone": "Dit eget nummer (iMessage) — hertil sender Svend leads og akut-beskeder.",
-    "useClaude": "true = naturlig samtale via Claude (kræver anthropicApiKey). false = gratis regelbaseret.",
-    "anthropicApiKey": "Din nøgle fra console.anthropic.com (kun hvis useClaude er true).",
-    "model": "claude-haiku-4-5-20251001 er billigst/hurtigst. Skift til claude-sonnet-5 for endnu bedre svar.",
-    "port": "Porten BlueBubbles-webhooken peger på."
+    "followupMessage": "{{navn}} bliver erstattet med leadets fornavn.",
+    "monday.apiToken": "Hentes på monday.com → profil → Udvikler → My Access Tokens.",
+    "monday.boardId": "5089681587 = 'Optimized - Google Ads' (hvor nye leads lander).",
+    "monday.phoneColumnId": "text_mkzb16sg = telefon-kolonnen på det board.",
+    "monday.delayMinutes": "Hvor længe efter et lead oprettes, beskeden sendes.",
+    "monday.dryRun": "true = sender INTET, logger kun hvem den ville skrive til. Sæt false for at sende rigtigt.",
+    "monday.allowedNumbers": "Kun disse numre må få beskeder. Tom liste [] = alle numre. Start med kun dit testnummer."
   }
 }

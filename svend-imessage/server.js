@@ -12,6 +12,7 @@ const { handleMessage } = require("./brain");
 const { getState, saveState, addLead } = require("./store");
 const { sendIMessage } = require("./imessage");
 const { normalizeDkPhone } = require("./lead-watcher");
+const { isTraining, stripTrigger, loadTraining, saveTraining, applyInstruction } = require("./training");
 
 // --- Config ---
 let cfg;
@@ -62,6 +63,23 @@ async function onIncoming(address, text, guid) {
       console.log(`   ⏭️  ${address} er ikke på svar-whitelist — Noah svarer ikke (venter på din tilladelse).`);
       return;
     }
+  }
+
+  // TRÆNING: en besked fra et whitelistet nummer der starter med "noah:" er en
+  // instruktion til at opdatere priser/sprog/tone — ikke en kundesamtale.
+  if (isTraining(text)) {
+    const instruction = stripTrigger(text);
+    console.log(`🎓 Træning fra ${address}: ${instruction}`);
+    try {
+      const { training, confirmation } = await applyInstruction(loadTraining(), instruction, cfg);
+      saveTraining(training);
+      await sendIMessage(address, confirmation);
+      console.log(`   ✅ Noahs instrukser opdateret.`);
+    } catch (e) {
+      console.error("❌ Trænings-fejl:", e.message);
+      try { await sendIMessage(address, "Beklager, jeg kunne ikke opdatere lige nu — prøv igen om lidt 🙏"); } catch {}
+    }
+    return;
   }
 
   const state = getState(address);

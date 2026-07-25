@@ -7,6 +7,8 @@
      (naturlig samtale). Fald-tilbage til regelbaseret hvis Claude fejler.
    ========================================================================== */
 
+const { loadTraining } = require("./training");
+
 const kr = n => Math.round(n).toLocaleString("da-DK") + " kr";
 const has = (t, arr) => arr.some(w => t.includes(w));
 
@@ -154,7 +156,7 @@ DIN OPGAVE:
 - Hold hver besked kort — det er en SMS, ikke et brev.
 
 ${priser}
-
+${(() => { const tr = loadTraining(); return tr ? `\nEKSTRA INSTRUKSER FRA CHEFEN (disse VINDER over alt ovenstående — også priser, sprog og tone):\n${tr}\n` : ""; })()}
 Svar KUN med RÅ JSON i dette format — INGEN markdown, INGEN \`\`\` kodeblokke, ingen tekst udenom:
 {"reply":"din besked til kunden","status":"chatting|urgent|booked","lead":{"opgave":"","estimat":"","adresse":"","tid":""}}
 Udfyld "lead" felterne når du kender dem (ellers tom streng). Sæt status="booked" NÅR en tid er aftalt, "urgent" ved akut, ellers "chatting".`;

@@ -122,6 +122,50 @@ function parseBlueBubbles(body) {
   return { address, text: String(text).trim(), guid: d.guid || "" };
 }
 
+// --- POLLING: Noah HENTER nye beskeder fra BlueBubbles' API (mere stabilt end webhook) ---
+const BB = {
+  url: (cfg.bluebubbles && cfg.bluebubbles.url) || "http://localhost:1234",
+  password: (cfg.bluebubbles && cfg.bluebubbles.password) || "",
+  every: ((cfg.bluebubbles && cfg.bluebubbles.pollSeconds) || 3) * 1000,
+};
+const _bbSeen = new Set();
+let _bbBaselined = false;
+
+async function bbQuery(limit) {
+  const res = await fetch(`${BB.url}/api/v1/message/query?password=${encodeURIComponent(BB.password)}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ limit, offset: 0, with: ["handle"], sort: "DESC" }),
+  });
+  if (!res.ok) throw new Error("BlueBubbles API " + res.status);
+  const d = await res.json();
+  return d.data || [];
+}
+
+async function bbPoll() {
+  try {
+    const msgs = await bbQuery(_bbBaselined ? 10 : 25);
+    if (!_bbBaselined) {
+      // Baseline: markér eksisterende beskeder som set, så vi IKKE svarer på gammelt ved opstart.
+      for (const m of msgs) _bbSeen.add(m.guid);
+      _bbBaselined = true;
+      console.log(`👂 Henter nye beskeder fra BlueBubbles hvert ${BB.every / 1000}s (baseline: ${_bbSeen.size}).`);
+      return;
+    }
+    for (const m of msgs.slice().reverse()) {   // ældste først
+      if (!m.guid || _bbSeen.has(m.guid)) continue;
+      _bbSeen.add(m.guid);
+      if (m.isFromMe) continue;
+      const address = m.handle && m.handle.address;
+      const text = m.text || "";
+      if (address && text) await onIncoming(address, text, m.guid);
+    }
+    if (_bbSeen.size > 2000) { const a = [..._bbSeen].slice(-1000); _bbSeen.clear(); a.forEach(g => _bbSeen.add(g)); }
+  } catch (e) {
+    console.error("👂 Poll-fejl:", e.message);
+  }
+}
+
 // --- HTTP-server ---
 const server = http.createServer((req, res) => {
   if (req.method === "GET" && req.url === "/") {
@@ -155,5 +199,11 @@ server.listen(PORT, () => {
   console.log(`\n🔧 Svend kører for ${cfg.firm} (${trade.name})`);
   console.log(`   Hjerne: ${cfg.useClaude && cfg.anthropicApiKey ? "Claude (" + (cfg.model||"haiku") + ")" : "regelbaseret (gratis)"}`);
   console.log(`   Lytter på http://localhost:${PORT}/webhook`);
-  console.log(`   Peg BlueBubbles-webhooken herhen, og skriv en iMessage for at teste.\n`);
+  if (BB.password) {
+    bbPoll();                       // baseline med det samme
+    setInterval(bbPoll, BB.every);  // og derefter løbende
+  } else {
+    console.log("   ⚠️ Ingen bluebubbles.password i config — polling er slået fra (kun webhook).");
+  }
+  console.log("");
 });

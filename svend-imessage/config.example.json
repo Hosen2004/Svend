@@ -3,19 +3,15 @@
   "agentName": "Noah",
   "tradeKey": "vinduespudser",
   "ownerPhone": "+45 20 00 00 00",
-
   "useClaude": true,
   "anthropicApiKey": "",
   "model": "claude-sonnet-5",
-
   "port": 8787,
-
-  "replyWhitelist": ["+4530803017"],
-
+  "replyWhitelist": [
+    "+4530803017"
+  ],
   "followupMessage": "Hey {{navn}}, jeg så lige at du har skrevet dig op til et tilbud på vinduerne derhjemme. Jeg er lige ude og pudse vinduer i en halv time mere — må jeg ringe til dig der? Bedste hilsner Noah, vinduespudser",
-
   "pricing": "Beskriv din prisberegning her, så bruger Noah den. Fx: Vi regner tid gange timeløn 775 kr/time. 1 dannebrogsfag ca. 130 kr, 3-fags ca. 160 kr, 4-fags ca. 230 kr (inde+ude). Minimum 400 kr. Sig altid at prisen er vejledende.",
-
   "monday": {
     "apiToken": "",
     "boardId": 5089681587,
@@ -23,9 +19,10 @@
     "delayMinutes": 4,
     "pollSeconds": 30,
     "dryRun": true,
-    "allowedNumbers": ["+4530803017"]
+    "allowedNumbers": [
+      "+4530803017"
+    ]
   },
-
   "_hjælp": {
     "agentName": "Navnet Noah præsenterer sig med over for kunden.",
     "replyWhitelist": "To-vejs auto-svar (server.js): Noah svarer KUN disse numre. Tom liste [] = alle. Start med dine egne testnumre.",
@@ -37,6 +34,12 @@
     "monday.phoneColumnId": "text_mkzb16sg = telefon-kolonnen på det board.",
     "monday.delayMinutes": "Hvor længe efter et lead oprettes, beskeden sendes.",
     "monday.dryRun": "true = sender INTET, logger kun hvem den ville skrive til. Sæt false for at sende rigtigt.",
-    "monday.allowedNumbers": "Kun disse numre må få beskeder. Tom liste [] = alle numre. Start med kun dit testnummer."
+    "monday.allowedNumbers": "Kun disse numre må få beskeder. Tom liste [] = alle numre. Start med kun dit testnummer.",
+    "bluebubbles": "Noah henter nye beskeder fra BlueBubbles API (stabilt). password = dit BlueBubbles server-password."
+  },
+  "bluebubbles": {
+    "url": "http://localhost:1234",
+    "password": "DIT-BLUEBUBBLES-PASSWORD",
+    "pollSeconds": 3
   }
 }

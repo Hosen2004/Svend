@@ -10,6 +10,8 @@
 
   "port": 8787,
 
+  "replyWhitelist": ["+4530803017"],
+
   "followupMessage": "Hey {{navn}}, jeg så lige at du har skrevet dig op til et tilbud på vinduerne derhjemme. Jeg er lige ude og pudse vinduer i en halv time mere — må jeg ringe til dig der? Bedste hilsner Noah, vinduespudser",
 
   "pricing": "Beskriv din prisberegning her, så bruger Noah den. Fx: Vi regner tid gange timeløn 775 kr/time. 1 dannebrogsfag ca. 130 kr, 3-fags ca. 160 kr, 4-fags ca. 230 kr (inde+ude). Minimum 400 kr. Sig altid at prisen er vejledende.",
@@ -26,6 +28,7 @@
 
   "_hjælp": {
     "agentName": "Navnet Noah præsenterer sig med over for kunden.",
+    "replyWhitelist": "To-vejs auto-svar (server.js): Noah svarer KUN disse numre. Tom liste [] = alle. Start med dine egne testnumre.",
     "useClaude": "true = menneskelige svar via Claude (kræver anthropicApiKey). false = gratis regelbaseret.",
     "pricing": "Din prisberegning i fri tekst. Claude bruger den til at give cirkapriser. Lad stå tom for at bruge standardpriser.",
     "followupMessage": "{{navn}} bliver erstattet med leadets fornavn.",

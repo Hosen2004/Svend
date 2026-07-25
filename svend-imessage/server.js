@@ -11,6 +11,7 @@ const { TRADES } = require("./trades");
 const { handleMessage } = require("./brain");
 const { getState, saveState, addLead } = require("./store");
 const { sendIMessage } = require("./imessage");
+const { normalizeDkPhone } = require("./lead-watcher");
 
 // --- Config ---
 let cfg;
@@ -32,6 +33,17 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 async function onIncoming(address, text) {
   if (!address || !text) return;
   console.log(`\n📥 ${address}: ${text}`);
+
+  // Sikkerhed: hvis der er en svar-whitelist, svarer Noah KUN til de numre.
+  const wl = cfg.replyWhitelist || [];
+  if (wl.length) {
+    const norm = normalizeDkPhone(address);
+    if (!wl.includes(address) && !wl.includes(norm)) {
+      console.log(`   ⏭️  ${address} er ikke på svar-whitelist — Noah svarer ikke (venter på din tilladelse).`);
+      return;
+    }
+  }
+
   const state = getState(address);
 
   const out = await handleMessage(state, text, cfg, trade);

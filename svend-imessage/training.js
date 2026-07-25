@@ -50,7 +50,7 @@ Returnér KUN gyldig JSON (ingen markdown, ingen kodeblokke):
   });
   if (!res.ok) throw new Error("Claude " + res.status + ": " + (await res.text()).slice(0, 200));
   const data = await res.json();
-  const raw = (data.content && data.content[0] && data.content[0].text) || "";
+  const raw = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
   const parsed = parseLoose(raw);
   if (!parsed || !parsed.training) {
     // fald tilbage: læg bare instruktionen til som en linje

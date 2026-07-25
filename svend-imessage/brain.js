@@ -191,14 +191,15 @@ async function claudeReply(state, text, cfg, trade) {
     },
     body: JSON.stringify({
       model: cfg.model || "claude-haiku-4-5-20251001",
-      max_tokens: 400,
+      max_tokens: 1500,
       system: systemPrompt(cfg, trade),
       messages: state.history,
     }),
   });
   if (!res.ok) throw new Error("Claude API " + res.status + ": " + (await res.text()).slice(0, 200));
   const data = await res.json();
-  const raw = (data.content && data.content[0] && data.content[0].text) || "";
+  // saml alle tekst-blokke (spring "thinking"-blokke over — Sonnet bruger dem)
+  const raw = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
   state.history.push({ role: "assistant", content: raw });
 
   let parsed = parseJsonLoose(raw) || { reply: stripFences(raw) || "Beklager, prøv lige igen 🙂", status: "chatting", lead: {} };

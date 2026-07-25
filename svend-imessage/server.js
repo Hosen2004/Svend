@@ -29,9 +29,29 @@ if (!trade) {
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
+// --- Dublet-beskyttelse: samme besked må aldrig besvares to gange ---
+const _seenGuids = new Set();
+const _recentContent = new Map();
+function isDuplicateMessage(guid, address, text) {
+  const now = Date.now();
+  if (guid) {
+    if (_seenGuids.has(guid)) return true;
+    _seenGuids.add(guid);
+  }
+  const key = address + "|" + text;
+  const last = _recentContent.get(key);
+  _recentContent.set(key, now);
+  if (last && now - last < 90000) return true;   // samme tekst fra samme nr. inden for 90s = dublet
+  return false;
+}
+
 // --- Håndtér én indgående besked ---
-async function onIncoming(address, text) {
+async function onIncoming(address, text, guid) {
   if (!address || !text) return;
+  if (isDuplicateMessage(guid, address, text)) {
+    console.log(`   ⏭️  Dublet ignoreret (allerede behandlet): ${address}`);
+    return;
+  }
   console.log(`\n📥 ${address}: ${text}`);
 
   // Sikkerhed: hvis der er en svar-whitelist, svarer Noah KUN til de numre.
@@ -81,7 +101,7 @@ function parseBlueBubbles(body) {
   const address = (d.handle && d.handle.address) || d.address
     || (Array.isArray(d.handles) && d.handles[0] && d.handles[0].address) || "";
   if (!text || !address) return null;
-  return { address, text: String(text).trim() };
+  return { address, text: String(text).trim(), guid: d.guid || "" };
 }
 
 // --- HTTP-server ---
@@ -101,7 +121,7 @@ const server = http.createServer((req, res) => {
         const body = JSON.parse(raw || "{}");
         console.log(`📨 Webhook: ${body.type || "?"} — ${JSON.stringify(body.data || {}).slice(0, 220)}`);
         const msg = parseBlueBubbles(body);
-        if (msg) await onIncoming(msg.address, msg.text);
+        if (msg) await onIncoming(msg.address, msg.text, msg.guid);
         else console.log("   (sprunget over — egen besked, eller kunne ikke læse afsender/tekst)");
       } catch (e) {
         console.error("❌ Fejl i webhook:", e.message);

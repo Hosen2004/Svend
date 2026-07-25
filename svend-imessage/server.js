@@ -64,11 +64,12 @@ async function onIncoming(address, text) {
 function parseBlueBubbles(body) {
   // BlueBubbles "new-message": { type, data: { text, isFromMe, handle:{address}, ... } }
   const d = (body && body.data) || {};
-  if (d.isFromMe) return null;                 // ignorér vores egne (Svends) beskeder
+  if (d.isFromMe || d.is_from_me) return null;   // ignorér vores egne (Noahs) beskeder
   const text = d.text || (d.attributedBody && d.attributedBody.string) || "";
-  const address = (d.handle && d.handle.address) || d.address || "";
+  const address = (d.handle && d.handle.address) || d.address
+    || (Array.isArray(d.handles) && d.handles[0] && d.handles[0].address) || "";
   if (!text || !address) return null;
-  return { address, text };
+  return { address, text: String(text).trim() };
 }
 
 // --- HTTP-server ---
@@ -86,8 +87,10 @@ const server = http.createServer((req, res) => {
       res.end('{"ok":true}');           // svar BlueBubbles med det samme
       try {
         const body = JSON.parse(raw || "{}");
+        console.log(`📨 Webhook: ${body.type || "?"} — ${JSON.stringify(body.data || {}).slice(0, 220)}`);
         const msg = parseBlueBubbles(body);
         if (msg) await onIncoming(msg.address, msg.text);
+        else console.log("   (sprunget over — egen besked, eller kunne ikke læse afsender/tekst)");
       } catch (e) {
         console.error("❌ Fejl i webhook:", e.message);
       }

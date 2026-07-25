@@ -136,26 +136,43 @@ function ownerCard(lead) {
 
 /* ---------- CLAUDE-HJERNE (valgfri, naturlig samtale) ---------- */
 function systemPrompt(cfg, trade) {
-  const priser = trade.items
-    .map(i => `- ${i.label}: ${kr(i.price)}${i.unit === "stk" ? "" : ` pr. ${i.unit}`}`)
-    .join("\n");
-  return `Du er "Svend", telefon- og SMS-assistent for ${cfg.firm}, et ${trade.name}-firma.
-Du skriver med en KUNDE på iMessage. Skriv venligt, kort og naturligt dansk — som en dygtig, rolig kontorsvend. Aldrig kunstigt eller robotagtigt. Brug gerne et enkelt emoji, men ikke i hver besked.
+  const navn = cfg.agentName || "Svend";
+  const priser = cfg.pricing
+    ? cfg.pricing
+    : trade.items
+        .map(i => `- ${i.label}: ${kr(i.price)}${i.unit === "stk" ? "" : ` pr. ${i.unit}`}`)
+        .join("\n");
+  return `Du er "${navn}", den person der svarer på SMS/iMessage for ${cfg.firm}, et ${trade.name}-firma.
+Du skriver med en KUNDE. Skriv venligt, kort og naturligt dansk — som et rigtigt, travlt menneske der lige svarer hurtigt. Aldrig kunstigt eller robotagtigt. Brug gerne et enkelt emoji, men ikke i hver besked.
 
 DIN OPGAVE:
 - Tag imod kunden, find ud af hvad de har brug for.
-- Ved akut (vandskade, strømsvigt, indbrud): vær beroligende og hurtig, bed om adressen.
-- Giv en VEJLEDENDE pris ud fra listen herunder. Sig altid, at ${cfg.firm} bekræfter den endelige pris på stedet.
+- Ved akut: vær beroligende og hurtig, bed om adressen.
+- Giv en VEJLEDENDE pris ud fra prisberegningen herunder. Sig altid, at ${cfg.firm} bekræfter den endelige pris på stedet.
 - Book en tid: spørg om adresse, tilbud en ledig tid (i dag 14, i morgen 9, fredag 12), og bekræft.
 - Lov ALDRIG en fast pris eller garanti. Er du i tvivl, så sig at ${cfg.firm} ringer kunden op.
 - Hold hver besked kort — det er en SMS, ikke et brev.
 
-VEJLEDENDE PRISER:
 ${priser}
 
-Svar KUN med gyldig JSON i dette format (intet andet):
+Svar KUN med RÅ JSON i dette format — INGEN markdown, INGEN \`\`\` kodeblokke, ingen tekst udenom:
 {"reply":"din besked til kunden","status":"chatting|urgent|booked","lead":{"opgave":"","estimat":"","adresse":"","tid":""}}
 Udfyld "lead" felterne når du kender dem (ellers tom streng). Sæt status="booked" NÅR en tid er aftalt, "urgent" ved akut, ellers "chatting".`;
+}
+
+function stripFences(s) {
+  return String(s || "").trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+}
+/* Robust JSON-læsning: håndterer ```json-blokke og ekstra tekst omkring. */
+function parseJsonLoose(raw) {
+  const s = stripFences(raw);
+  try { return JSON.parse(s); } catch { /* prøv at fiske objektet ud */ }
+  const m = s.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch { /* giv op */ } }
+  return null;
 }
 
 async function claudeReply(state, text, cfg, trade) {
@@ -182,9 +199,7 @@ async function claudeReply(state, text, cfg, trade) {
   const raw = (data.content && data.content[0] && data.content[0].text) || "";
   state.history.push({ role: "assistant", content: raw });
 
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch { parsed = { reply: raw.trim() || "Beklager, prøv lige igen 🙂", status: "chatting", lead: {} }; }
+  let parsed = parseJsonLoose(raw) || { reply: stripFences(raw) || "Beklager, prøv lige igen 🙂", status: "chatting", lead: {} };
 
   const replies = [parsed.reply];
   let ownerNotify = null, lead = null;

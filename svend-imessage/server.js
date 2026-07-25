@@ -65,11 +65,13 @@ async function onIncoming(address, text, guid) {
     }
   }
 
-  // TRÆNING: en besked fra et whitelistet nummer der starter med "noah:" er en
-  // instruktion til at opdatere priser/sprog/tone — ikke en kundesamtale.
-  if (isTraining(text)) {
-    const instruction = stripTrigger(text);
-    console.log(`🎓 Træning fra ${address}: ${instruction}`);
+  const state = getState(address);
+
+  // --- TRÆNINGSMODE: chefen lærer Noah op i en naturlig samtale ---
+  const enterTrain = /^(noah\s*[:,]\s*)?(træn|træning|træningsmode|lær\s*mig|start\s*træning)\s*[.!]?$/i;
+  const exitTrain  = /^(stop|færdig|done|slut|stop\s*træning)\s*[.!]?$/i;
+
+  async function learn(instruction) {
     try {
       const { training, confirmation } = await applyInstruction(loadTraining(), instruction, cfg);
       saveTraining(training);
@@ -77,12 +79,33 @@ async function onIncoming(address, text, guid) {
       console.log(`   ✅ Noahs instrukser opdateret.`);
     } catch (e) {
       console.error("❌ Trænings-fejl:", e.message);
-      try { await sendIMessage(address, "Beklager, jeg kunne ikke opdatere lige nu — prøv igen om lidt 🙏"); } catch {}
+      try { await sendIMessage(address, "Beklager, det glippede — prøv igen 🙏"); } catch {}
     }
-    return;
   }
 
-  const state = getState(address);
+  if (enterTrain.test(text.trim())) {
+    state.trainingMode = true; saveState();
+    console.log(`🎓 ${address} gik i TRÆNINGSMODE.`);
+    await sendIMessage(address, "Så er jeg klar til at lære 🎓 Fortæl mig om priser, sprog, tone eller regler — bare skriv løs, så husker jeg det hele. Skriv \"stop\" når du er færdig.");
+    return;
+  }
+  if (state.trainingMode) {
+    if (exitTrain.test(text.trim())) {
+      state.trainingMode = false; saveState();
+      console.log(`🎓 ${address} forlod træningsmode.`);
+      await sendIMessage(address, "Færdig med at træne 👍 Jeg husker det hele. Skriv \"træn\", hvis du vil lære mig mere en anden gang.");
+      return;
+    }
+    console.log(`🎓 Træner (${address}): ${text}`);
+    await learn(text);
+    return;
+  }
+  // Enkelt-instruktion uden at gå i træningsmode: besked der starter med "noah:"
+  if (isTraining(text)) {
+    console.log(`🎓 Enkelt-træning fra ${address}: ${stripTrigger(text)}`);
+    await learn(stripTrigger(text));
+    return;
+  }
 
   const out = await handleMessage(state, text, cfg, trade);
   saveState();

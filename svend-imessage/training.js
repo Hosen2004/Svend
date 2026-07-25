@@ -38,6 +38,7 @@ Du får den NUVÆRENDE instruks-tekst og en NY besked fra chefen. Lav en opdater
 - Er det noget NYT (tone, sprog, en regel, viden om firmaet), så tilføj det kort og klart.
 - Behold alt det gamle der stadig gælder. Hold teksten ryddelig i punktform, på dansk.
 - Opfind ALDRIG priser eller regler chefen ikke har sagt.
+- Hvis chefens besked IKKE er en konkret ændring (fx bare en hilsen, tak, eller et spørgsmål), så behold instrukserne UÆNDRET og svar venligt og kort i "confirmation" (svar evt. på spørgsmålet, eller sig at du er klar til at lære mere).
 
 Returnér KUN gyldig JSON (ingen markdown, ingen kodeblokke):
 {"training":"den KOMPLETTE opdaterede instruks-tekst","confirmation":"kort, venlig bekræftelse til chefen om præcis hvad du ændrede"}`;

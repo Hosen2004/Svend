@@ -37,7 +37,8 @@
     "monday.allowedNumbers": "Kun disse numre må få beskeder. Tom liste [] = alle numre. Start med kun dit testnummer.",
     "bluebubbles": "Noah henter nye beskeder fra BlueBubbles API (stabilt). password = dit BlueBubbles server-password.",
     "gmail": "Til daglig mailrapport: din Gmail + en app-adgangskode (myaccount.google.com/apppasswords).",
-    "reportRecipient": "Nummer der modtager den daglige rapport kl. 11."
+    "reportRecipient": "Nummer der modtager den daglige rapport kl. 11.",
+    "pushMessage": "Standard-besked når Claude skriver til leads. {{navn}} og {{adresse}} erstattes."
   },
   "bluebubbles": {
     "url": "http://localhost:1234",
@@ -48,5 +49,6 @@
     "user": "din-mail@gmail.com",
     "appPassword": "DIN-GMAIL-APP-ADGANGSKODE"
   },
-  "reportRecipient": "+4530803017"
+  "reportRecipient": "+4530803017",
+  "pushMessage": "Hej {{navn}} 😊 ... (din standard-besked til leads. {{navn}} og {{adresse}} flettes ind)"
 }

@@ -38,14 +38,15 @@ async function buildMondayReport(cfg, sinceISO) {
 }
 
 /* Formatér Monday-delen til rapport-tekst */
-function formatMondayReport(r) {
+function formatMondayReport(r, unprocessed) {
   const lines = [];
   lines.push(`📊 LEADS (Monday)`);
-  lines.push(`• Nye leads: ${r.newLeads}`);
+  if (typeof unprocessed === "number") lines.push(`• Ubehandlede leads (Koordiner): ${unprocessed}`);
+  lines.push(`• Nye leads (24t): ${r.newLeads}`);
   if (r.movedOut === 0) {
-    lines.push(`• Rykket ud af Koordiner: 0`);
+    lines.push(`• Rykket ud af Koordiner (24t): 0`);
   } else {
-    lines.push(`• Rykket ud af Koordiner: ${r.movedOut}`);
+    lines.push(`• Rykket ud af Koordiner (24t): ${r.movedOut}`);
     const parts = Object.entries(r.movedTo)
       .sort((a, b) => b[1] - a[1])
       .map(([dest, n]) => `   → ${dest}: ${n}`);

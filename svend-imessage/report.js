@@ -55,14 +55,16 @@ Nye henvendelser: <antal>`;
     mailPart = await summarizeEmails(cfg, emails);
   } catch (e) { console.error("[rapport] Gmail-fejl:", e.message); }
 
+  let followupRes = null;
   let followupPart = "🔔 OPFØLGNINGER\n• (kunne ikke hentes)";
   try {
-    followupPart = formatFollowupReport(await buildFollowupReport(cfg));
+    followupRes = await buildFollowupReport(cfg);
+    followupPart = formatFollowupReport(followupRes);
   } catch (e) { console.error("[rapport] Opfølgnings-fejl:", e.message); }
 
   let mondayPart = "📊 LEADS (Monday)\n• (kunne ikke hentes)";
   try {
-    mondayPart = formatMondayReport(await buildMondayReport(cfg, sinceISO));
+    mondayPart = formatMondayReport(await buildMondayReport(cfg, sinceISO), followupRes ? followupRes.unprocessed : undefined);
   } catch (e) { console.error("[rapport] Monday-fejl:", e.message); }
 
   const dato = new Date().toLocaleDateString("da-DK", { day: "numeric", month: "long" });

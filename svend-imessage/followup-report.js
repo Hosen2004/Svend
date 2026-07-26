@@ -30,13 +30,17 @@ async function buildFollowupReport(cfg, todayStr) {
   const groups = (d.boards && d.boards[0] && d.boards[0].groups) || [];
 
   const due = [];
+  let unprocessed = 0; // Koordiner-leads UDEN opfølgningsdato = ubehandlede
   for (const g of groups) {
     const items = (g.items_page && g.items_page.items) || [];
     for (const it of items) {
       const cv = {};
       (it.column_values || []).forEach(c => { cv[c.id] = c.text; });
       const fdate = cv[FOLLOWUP_COL];
-      if (!fdate) continue;                 // ingen opfølgningsdato sat
+      if (!fdate) {
+        if (g.id === "topics") unprocessed++;   // ubehandlet lead i Koordiner
+        continue;
+      }
       if (fdate <= today) {                 // forfalden eller i dag (YYYY-MM-DD kan sammenlignes som tekst)
         due.push({
           name: it.name,
@@ -49,7 +53,7 @@ async function buildFollowupReport(cfg, todayStr) {
     }
   }
   due.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-  return { due, today };
+  return { due, today, unprocessed };
 }
 
 function formatFollowupReport(r) {

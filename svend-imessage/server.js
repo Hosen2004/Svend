@@ -13,6 +13,7 @@ const { getState, saveState, addLead } = require("./store");
 const { sendIMessage } = require("./imessage");
 const { normalizeDkPhone } = require("./lead-watcher");
 const { isTraining, stripTrigger, loadTraining, saveTraining, applyInstruction } = require("./training");
+const { handleLeadReply } = require("./reply-tracker");
 
 // --- Config ---
 let cfg;
@@ -54,6 +55,12 @@ async function onIncoming(address, text, guid) {
     return;
   }
   console.log(`\n📥 ${address}: ${text}`);
+
+  // Auto-opdatér Monday hvis afsenderen er et pushet lead der svarer (uanset whitelist).
+  try {
+    const upd = await handleLeadReply(cfg, address, text);
+    if (upd) console.log(`   📊 Monday: ${address} → "Claude push besvaret" = ${upd.label}`);
+  } catch (e) { console.error("   ⚠️ svar-tracker fejl:", e.message); }
 
   // Sikkerhed: hvis der er en svar-whitelist, svarer Noah KUN til de numre.
   const wl = cfg.replyWhitelist || [];

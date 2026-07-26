@@ -35,11 +35,18 @@
     "monday.delayMinutes": "Hvor længe efter et lead oprettes, beskeden sendes.",
     "monday.dryRun": "true = sender INTET, logger kun hvem den ville skrive til. Sæt false for at sende rigtigt.",
     "monday.allowedNumbers": "Kun disse numre må få beskeder. Tom liste [] = alle numre. Start med kun dit testnummer.",
-    "bluebubbles": "Noah henter nye beskeder fra BlueBubbles API (stabilt). password = dit BlueBubbles server-password."
+    "bluebubbles": "Noah henter nye beskeder fra BlueBubbles API (stabilt). password = dit BlueBubbles server-password.",
+    "gmail": "Til daglig mailrapport: din Gmail + en app-adgangskode (myaccount.google.com/apppasswords).",
+    "reportRecipient": "Nummer der modtager den daglige rapport kl. 11."
   },
   "bluebubbles": {
     "url": "http://localhost:1234",
     "password": "DIT-BLUEBUBBLES-PASSWORD",
     "pollSeconds": 3
-  }
+  },
+  "gmail": {
+    "user": "din-mail@gmail.com",
+    "appPassword": "DIN-GMAIL-APP-ADGANGSKODE"
+  },
+  "reportRecipient": "+4530803017"
 }

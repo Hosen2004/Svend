@@ -14,17 +14,21 @@ const DRY = process.argv.includes("--dry");
 
 /* Opsummér mails til det vigtige via Claude */
 async function summarizeEmails(cfg, emails) {
-  if (!emails.length) return "📧 MAIL\n• Ingen nye mails det seneste døgn.";
+  const empty = "📧 MAIL (seneste 24t)\n• Kræver handling: 0\n• Tidsfølsomt: 0\n• Nye henvendelser: 0";
+  if (!emails.length) return empty;
   const list = emails
     .map((e, i) => `#${i + 1}\nFra: ${e.from}\nEmne: ${e.subject}\nTekst: ${e.text}`)
     .join("\n\n");
-  const system = `Du er Puds og Plus' assistent (vinduespudser). Du får en liste af mails fra det seneste døgn. Skriv en KORT dansk rapport med KUN det, firmaet skal tage stilling til.
-Kategorisér:
-🔴 KRÆVER HANDLING (eksisterende kunder): vil rykke/ændre tid, opsige/ændre abonnement, klage, eller kræver svar.
-🟡 TIDSFØLSOMT: tilbud/henvendelser der haster.
-🟢 NYE HENVENDELSER: navn + telefon + kort om opgaven.
-Ignorér støj HELT (nævn det ikke): kvitteringer, MFA/login-koder, login-notifikationer, reklamer, annonce-kvitteringer (Meta/Facebook/Anthropic), nyhedsbreve og andre automatiske beskeder.
-Format: punktform, hver linje "• navn — hvad de vil (telefon)". Start med linjen "📧 MAIL". Hvis intet vigtigt: skriv "📧 MAIL\n• Intet der kræver handling." Vær kortfattet.`;
+  const system = `Du er Puds og Plus' assistent (vinduespudser). Du får en liste af mails fra det seneste døgn. TÆL hvor mange der falder i hver kategori.
+Ignorér støj HELT (tæl dem IKKE): kvitteringer, MFA/login-koder, login-notifikationer, reklamer, annonce-kvitteringer (Meta/Facebook/Anthropic), nyhedsbreve og andre automatiske beskeder.
+Kategorier:
+- Kræver handling: eksisterende kunder der vil rykke/ændre tid, opsige/ændre abonnement, klage, eller kræver svar.
+- Tidsfølsomt: tilbud/henvendelser der haster.
+- Nye henvendelser: nye kunde-forespørgsler.
+Svar KUN med præcis disse tre linjer og et tal. INGEN navne, INGEN detaljer, ingen anden tekst:
+Kræver handling: <antal>
+Tidsfølsomt: <antal>
+Nye henvendelser: <antal>`;
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -33,8 +37,10 @@ Format: punktform, hver linje "• navn — hvad de vil (telefon)". Start med li
   });
   if (!res.ok) throw new Error("Claude " + res.status + ": " + (await res.text()).slice(0, 200));
   const data = await res.json();
-  return (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim()
-    || "📧 MAIL\n• (kunne ikke opsummere)";
+  const raw = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
+  if (!raw) return empty;
+  const lines = raw.split("\n").map(s => s.trim()).filter(Boolean).map(s => (s.startsWith("•") ? s : "• " + s));
+  return "📧 MAIL (seneste 24t)\n" + lines.join("\n");
 }
 
 (async () => {

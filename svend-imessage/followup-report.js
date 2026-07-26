@@ -53,22 +53,14 @@ async function buildFollowupReport(cfg, todayStr) {
 }
 
 function formatFollowupReport(r) {
-  const idag = r.due.filter(d => !d.overdue);
-  const forfaldne = r.due.filter(d => d.overdue);
-  if (!r.due.length) return "🔔 OPFØLGNINGER\n• Ingen opfølgninger i dag 🎉";
-
-  const line = d => `• ${d.name}${d.phone ? " (" + d.phone + ")" : ""} — ${d.group}`;
-  const lines = [`🔔 OPFØLGNINGER (${r.due.length})`];
-
-  if (idag.length) {
-    lines.push(`I DAG (${idag.length}):`);
-    idag.forEach(d => lines.push(line(d)));
-  }
-  if (forfaldne.length) {
-    lines.push(`⚠️ FORFALDNE (${forfaldne.length}):`);
-    forfaldne.forEach(d => lines.push(`${line(d)} [${d.date}]`));
-  }
-  return lines.join("\n");
+  const idag = r.due.filter(d => !d.overdue).length;
+  const forfaldne = r.due.filter(d => d.overdue).length;
+  return [
+    "🔔 OPFØLGNINGER",
+    `• I dag: ${idag}`,
+    `• Forfaldne: ${forfaldne}`,
+    `• I alt: ${r.due.length}`,
+  ].join("\n");
 }
 
 module.exports = { buildFollowupReport, formatFollowupReport, todayLocal };

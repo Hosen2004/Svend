@@ -6,9 +6,9 @@
 const { mondayQuery } = require("./monday");
 const { normalizeDkPhone } = require("./lead-watcher");
 
-const SENDT_COL = "color_mm5mz79n";   // Claude push sendt
-const BESV_COL = "color_mm5mrs8k";    // Claude push besvaret
-const NOTE_COL = "text_mm14fys7";     // Personlig note
+const SENDT_COL = "color_mm5mz79n";      // Claude push sendt
+const BESV_COL = "color_mm5mrs8k";       // Claude push besvaret
+const ONSKET_TID_COL = "text_mm5msfk7";  // Ønsket tid
 const PHONE_COL = "text_mkzb16sg";
 
 let _cache = new Map();   // normaliseret telefon -> { id, besvaret }
@@ -34,11 +34,10 @@ async function refreshCache(cfg) {
 }
 
 async function classify(cfg, text) {
-  const system = `En kunde har fået denne SMS fra en vinduespudser: "kan jeg ringe i morgen mellem 08 og 16?". Her er kundens SVAR. Klassificér svaret:
-- "✅ Svaret": siger ja/ok til at blive ringet op, uden et bestemt ønsket tidspunkt.
-- "📞 Tid foreslået": foreslår eller begrænser et tidspunkt (fx "efter kl 15", "ikke før 10", "helst formiddag", "er på job til 16").
-- "❌ Nej tak": afviser / ikke interesseret.
-Svar KUN med gyldig JSON (ingen markdown): {"label":"✅ Svaret" eller "📞 Tid foreslået" eller "❌ Nej tak","note":"kort dansk note, medtag evt. ønsket tidspunkt"}`;
+  const system = `En kunde har fået denne SMS fra en vinduespudser: "kan jeg ringe i morgen mellem 08 og 16, er der et tidspunkt der passer bedst?". Her er kundens SVAR. Afgør:
+- "answered": true hvis kunden siger ja/ok til at blive ringet op; false hvis de afviser (nej tak / ikke interesseret).
+- "time": hvis kunden nævner et ønsket tidspunkt eller en begrænsning (fx "efter kl 15", "ikke før 10", "helst formiddag", "på arbejde til 16", "ikke vågen kl 08"), så skriv KUN selve tidspunktet kort på dansk. Ellers tom streng "".
+Svar KUN med gyldig JSON (ingen markdown): {"answered":true,"time":""}`;
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": cfg.anthropicApiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -49,8 +48,8 @@ Svar KUN med gyldig JSON (ingen markdown): {"label":"✅ Svaret" eller "📞 Tid
   const raw = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
   let s = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
   let parsed; try { parsed = JSON.parse(s); } catch { const m = s.match(/\{[\s\S]*\}/); parsed = m ? JSON.parse(m[0]) : null; }
-  if (!parsed || !parsed.label) return { label: "✅ Svaret", note: "Svar modtaget" };
-  return { label: parsed.label, note: parsed.note || "Svar modtaget" };
+  if (!parsed) return { label: "✅ Svaret", time: "" };
+  return { label: parsed.answered === false ? "❌ Nej tak" : "✅ Svaret", time: (parsed.time || "").trim() };
 }
 
 /* Kaldes for hver indgående besked. Returnerer {label,note} hvis Monday blev opdateret, ellers null. */
@@ -60,14 +59,16 @@ async function handleLeadReply(cfg, phone, text) {
   if (Date.now() - _cacheAt > CACHE_MS) { try { await refreshCache(cfg); } catch (e) { /* prøv igen senere */ } }
   const lead = _cache.get(norm);
   if (!lead) return null;                                    // ikke et pushet lead
-  if (lead.besvaret === "📞 Tid foreslået" || lead.besvaret === "❌ Nej tak") return null; // allerede afklaret
+  if (lead.besvaret === "❌ Nej tak") return null;           // allerede afklaret (nej)
 
-  const { label, note } = await classify(cfg, text);
-  const v = JSON.stringify({ [BESV_COL]: { label }, [NOTE_COL]: note });
+  const { label, time } = await classify(cfg, text);
+  const cols = { [BESV_COL]: { label } };
+  if (time) cols[ONSKET_TID_COL] = time;                     // skriv selve tidspunktet i "Ønsket tid"
+  const v = JSON.stringify(cols);
   const m = `mutation($b:ID!,$i:ID!,$v:JSON!){ change_multiple_column_values(board_id:$b, item_id:$i, column_values:$v, create_labels_if_missing:true){ id } }`;
   await mondayQuery(cfg, m, { b: String(cfg.monday.boardId), i: String(lead.id), v });
   lead.besvaret = label;                                     // opdatér cache
-  return { label, note };
+  return { label, time };
 }
 
 module.exports = { handleLeadReply, refreshCache, classify };

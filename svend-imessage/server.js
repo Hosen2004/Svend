@@ -59,7 +59,7 @@ async function onIncoming(address, text, guid) {
   // Auto-opdatér Monday hvis afsenderen er et pushet lead der svarer (uanset whitelist).
   try {
     const upd = await handleLeadReply(cfg, address, text);
-    if (upd) console.log(`   📊 Monday: ${address} → "Claude push besvaret" = ${upd.label}`);
+    if (upd) console.log(`   📊 Monday: ${address} → ${upd.label}${upd.time ? " · Ønsket tid: " + upd.time : ""}`);
   } catch (e) { console.error("   ⚠️ svar-tracker fejl:", e.message); }
 
   // Sikkerhed: hvis der er en svar-whitelist, svarer Noah KUN til de numre.
